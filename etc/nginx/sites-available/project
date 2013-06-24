@@ -1,0 +1,29 @@
+server {
+    listen 80;
+    server_name www.site.dev *.site.dev;
+    root /var/www/site/public_html/;
+
+    
+    location / {
+		expires off;
+		try_files $uri $uri/ @kohana;
+    }
+    
+    # Prevent access to hidden files
+    location ~ /\. {
+		deny all;
+    }
+    
+    location @kohana {
+		rewrite ^/(.+)$ /index.php$request_uri last;
+    }
+    
+    location ~* \.php {
+		fastcgi_pass unix:/var/run/php5-fpm.sock;
+		include fastcgi_params;
+		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+		fastcgi_param KOHANA_ENV development;
+		fastcgi_cache off;
+		fastcgi_index index.php;
+    }
+}
